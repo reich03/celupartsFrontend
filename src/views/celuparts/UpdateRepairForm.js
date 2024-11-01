@@ -105,6 +105,8 @@ export default function UpdateRepairForm(props) {
   const [isTechnician, setIsTechnician] = useState(false);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
 
+  const paymentLink = "https://checkout.wompi.co/l/VPOS_kSQv5r";
+
   const postListOfRepairCheckedParts = () => {
     listOfRepairCheckedParts.map(repariPart =>
       getSearchRepeatedPartsToRepair({
@@ -439,14 +441,15 @@ export default function UpdateRepairForm(props) {
                       celupartsContactPhone +
                       " o al siguiente correo " +
                       celupartsContactEmail +
-                      " para confirmar pago",
+                      " para confirmar pago. " +
+                      "Puedes realizar el pago en el siguiente enlace: " +
+                      paymentLink,
                     wasReviewed: false,
                     notificationType: "to_customer"
                   }).catch(error => {
-                    si;
                     console.log(error);
                   })
-                );
+                );                
               });
 
               postListOfRepairCheckedParts();

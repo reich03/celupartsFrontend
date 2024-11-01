@@ -44,6 +44,15 @@ export default function UserRepairRequests() {
     pickUpDate: ""
   });
 
+  useEffect(() => {
+    if (location.search.includes("payment=success")) {
+      Swal.fire({
+        icon: "success",
+        title: "Pago Exitoso",
+        text: "Su pago ha sido procesado exitosamente."
+      });
+    }
+  }, [location.search]);
   const handleViewDetails = ({
     autoDiagnosis,
     deliveryAddress,
@@ -367,7 +376,7 @@ export default function UserRepairRequests() {
       }
     });
   };
-
+  const location = useLocation();
   return loading ? (
     <div>Loading...</div>
   ) : (
@@ -387,27 +396,29 @@ export default function UserRepairRequests() {
                 <th>Número de teléfono</th>
                 <th>Ver detalles</th>
                 <th>Ver historial de solicitud</th>
+                <th>Pagar</th>
+
               </tr>
             </thead>
             <tbody>
-              {userInfo[0]?.requests.map((tdata, index) =>
+            {userInfo[0]?.requests.map((tdata, index) =>
                 tdata.requestType === "Reparacion" ? (
                   <tr key={index} className="border-top">
                     <td>
                       {tdata.equipment?.equipmentBrand}{" "}
                       {tdata.equipment?.modelOrReference}
                     </td>
-                    <td>{tdata.requestStatus[0].status}</td>
+                    <td>{tdata.requestStatus[0]?.status || "Sin estado"}</td>
                     <td>
-                      {tdata.repairs[0].repairQuote == "0" &&
-                        tdata.repairs[0].priceReviewedByAdmin == false
+                      {tdata.repairs[0]?.repairQuote === "0" &&
+                      !tdata.repairs[0]?.priceReviewedByAdmin
                         ? "Pendiente"
-                        : tdata.repairs[0].repairQuote}
+                        : tdata.repairs[0]?.repairQuote || "No definido"}
                     </td>
                     <td>
                       {tdata.statusQuote === "Pendiente" &&
-                        tdata.repairs[0].priceReviewedByAdmin === true &&
-                        showButtons ? (
+                      tdata.repairs[0]?.priceReviewedByAdmin &&
+                      showButtons ? (
                         <div className="text-danger">
                           <button
                             type="button"
@@ -428,33 +439,33 @@ export default function UserRepairRequests() {
                         <i>{tdata.statusQuote}</i>
                       )}
                     </td>
-                    {tdata.homeServices[0]?.deliveryDate ? (
-                      // <td>{tdata.homeServices[0].deliveryDate}</td> ${new Date(tdata.requestDate).getHours()}:${new Date(tdata.requestDate).getMinutes()}
-                      <td>{`${new Date(tdata.requestDate).getFullYear()}-${new Date(tdata.requestDate).getMonth() + 1
-                        }-${new Date(tdata.requestDate).getDate()}`}</td>
-                    ) : (
-                      <td>Fecha sin definir</td>
-                    )}
-                    <td>{tdata.phone}</td>
                     <td>
-                      {/* <Button className='btn' color='info' type='button' onClick={() => handleViewDetails(tdata)} > */}
+                      {tdata.homeServices[0]?.deliveryDate
+                        ? new Date(tdata.requestDate).toLocaleDateString("es")
+                        : "Fecha sin definir"}
+                    </td>
+                    <td>{tdata.phone || "No disponible"}</td>
+                    <td>
                       <Button
-                        className="btn"
                         color="info"
-                        type="button"
                         onClick={() => handleViewDetails(tdata)}
                       >
                         Detalles
                       </Button>
                     </td>
                     <td>
-                      <Link
-                        to={`/home/request-history-table/${tdata.idRequest}`}
-                      >
-                        <Button type="button" className="btn" color="primary">
-                          Ver
-                        </Button>
+                      <Link to={`/home/request-history-table/${tdata.idRequest}`}>
+                        <Button color="primary">Ver</Button>
                       </Link>
+                    </td>
+                    <td>
+                      <Button
+                        color="success"
+                        onClick={() => handlePayment(tdata.idRequest, tdata.repairs[0]?.repairQuote)}
+                        disabled={!tdata.repairs[0] || tdata.repairs[0].repairQuote === "0"}
+                      >
+                        Pagar
+                      </Button>
                     </td>
                   </tr>
                 ) : null
